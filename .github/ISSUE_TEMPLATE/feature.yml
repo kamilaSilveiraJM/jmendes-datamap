@@ -1,0 +1,20 @@
+name: Funcionalidade
+description: Nova funcionalidade ou requisito (RF)
+labels: ["feature"]
+body:
+  - type: input
+    attributes: {label: Módulo / Épico, placeholder: "Ex.: 01 - Gestão de Indicadores"}
+    validations: {required: true}
+  - type: dropdown
+    attributes: {label: Versão alvo, options: [MVP, V1, V2, A Validar]}
+    validations: {required: true}
+  - type: textarea
+    attributes: {label: Objetivo / História de usuário}
+    validations: {required: true}
+  - type: textarea
+    attributes: {label: Regras de negócio (RN)}
+  - type: textarea
+    attributes: {label: Critérios de aceite}
+    validations: {required: true}
+  - type: input
+    attributes: {label: Origem na documentação, placeholder: "Ex.: BRD RF-IND-001 / TAP 6.3"}

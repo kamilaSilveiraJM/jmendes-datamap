@@ -1,0 +1,12 @@
+name: Bug
+description: Comportamento incorreto
+labels: ["bug"]
+body:
+  - type: textarea
+    attributes: {label: O que aconteceu}
+    validations: {required: true}
+  - type: textarea
+    attributes: {label: Passos para reproduzir}
+    validations: {required: true}
+  - type: textarea
+    attributes: {label: Resultado esperado}

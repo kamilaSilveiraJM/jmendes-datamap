@@ -1,0 +1,10 @@
+name: Tarefa técnica
+description: Infraestrutura, CI, refatoração, segurança
+labels: ["tecnica"]
+body:
+  - type: textarea
+    attributes: {label: Descrição e justificativa}
+    validations: {required: true}
+  - type: textarea
+    attributes: {label: Critérios de conclusão}
+    validations: {required: true}

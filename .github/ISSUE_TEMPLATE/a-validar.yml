@@ -1,0 +1,11 @@
+name: A Validar
+description: Dúvida, lacuna ou inconsistência na documentação
+labels: ["a-validar"]
+body:
+  - type: textarea
+    attributes: {label: Dúvida / inconsistência}
+    validations: {required: true}
+  - type: input
+    attributes: {label: Fonte (documento e item)}
+  - type: textarea
+    attributes: {label: Tratamento provisório proposto}
