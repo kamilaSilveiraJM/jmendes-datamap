@@ -1,7 +1,7 @@
 # J. Mendes DataMap — Análise da Documentação e Arquitetura Inicial
 
 > **Arquivo START do projeto.** Em nova conversa, carregue este arquivo primeiro.
-> Versão: 0.1 · Data: 26/11/2026 · Status: **aguardando validação** (nenhuma implementação iniciada)
+> Versão: 0.2 (Cloudflare) · Data: 26/11/2026 · Status: **aguardando validação** (nenhuma implementação iniciada)
 
 ---
 
@@ -20,7 +20,7 @@ Não há na pasta: modelo de coleta em Excel, lista real de indicadores/sistemas
 - **Problema:** ativos de informação dispersos (sistemas, Excel, Power BI, conhecimento tácito); dependência de pessoas; indicadores divergentes entre áreas; custo alto para BI/automação/IA.
 - **Solução:** catálogo vivo de **metadados** (não de conteúdo/dados pessoais) com workflow, histórico, recertificação e backlog de oportunidades.
 - **Cadência:** Onda 1 piloto RH (90 dias, MVP testável na semana 8) → Onda 2 Comercial + Custos/Controladoria → até 2 ondas adicionais. V1 até mês 5, V2 até mês 7.
-- **Stack já indicada no TAP:** React + Node.js. **Auth:** Microsoft Entra ID. **Equipe:** Felipe Sauter (compartilhada com Portfólio de Inovação e IA até 21/04/2027 → risco de capacidade).
+- **Stack:** TAP indica React + Node.js; **decisão de 26/11/2026: infraestrutura Cloudflare** (Pages + Workers + D1), mantendo React + TypeScript. **Auth:** Microsoft Entra ID. **Equipe:** Felipe Sauter (compartilhada com Portfólio de Inovação e IA até 21/04/2027 → risco de capacidade).
 - **Meta de UX:** gestor localiza indicador → dados → sistemas → consumidores → responsáveis em **≤ 5 min**; consultas ≤ 3 s, pesquisas ≤ 2 s; disponibilidade 99,5%.
 
 ## 3. Requisitos consolidados
@@ -64,7 +64,9 @@ Não há na pasta: modelo de coleta em Excel, lista real de indicadores/sistemas
 | AV-12 | **Responsável do indicador** | RN-IND-004 exige "ao menos um responsável", sem dizer o papel | Aceitar qualquer papel de Pessoa |
 | AV-13 | **Área vs Gerência** | Dashboard "Por Gerência"; ondas por gerência; cadastro por Área | Hierarquia Gerência → Área? Modelar `parent_id` |
 | AV-14 | **Canal dos alertas** | E-mail? Teams? Não especificado | Notificação interna + e-mail (a confirmar) |
-| AV-15 | **Banco, hospedagem e ambiente** | Não definidos (TAP: "decisões na Fase 0") | Proposta na seção 6 |
+| AV-15 | ~~Banco, hospedagem e ambiente~~ | **Resolvido (26/11/2026):** Cloudflare Pages/Workers/D1 | — |
+| AV-23 | **Aprovação corporativa do Cloudflare** | Conta, residência dos dados, aprovação de TI/Segurança/Privacidade e LGPD (metadados fora do ambiente Microsoft); resposta "sim" do usuário registrada, formalização pendente | Registrar aceite de risco no Gate de segurança |
+| AV-24 | **Limites do D1** | Tamanho do banco, consultas recursivas do grafo, busca full-text em português | Teste de carga/POC na Issue do modelo de dados; plano B Postgres + Hyperdrive |
 | AV-16 | **Integração com Portfólio de Inovação** | Sem API/contrato conhecido | Interface/adapter; fora do MVP |
 | AV-17 | **Repositório GitHub** | Org/nome/visibilidade não informados | Aguardar sua indicação; nada será criado antes |
 | AV-18 | **Comitê Gestor de IA** | Membros "A VALIDAR" no TAP | Fora do sistema |
@@ -87,13 +89,13 @@ Não há na pasta: modelo de coleta em Excel, lista real de indicadores/sistemas
 
 ```mermaid
 flowchart LR
-  U[Usuário] --> FE[SPA React + TS]
-  FE -->|HTTPS + JWT| API[API Node.js - monólito modular]
+  U[Usuário] --> FE[SPA React + TS - Cloudflare Pages]
+  FE -->|HTTPS + JWT| API[API - Cloudflare Worker, Hono + TS]
   FE -. login OIDC .-> ENTRA[Microsoft Entra ID]
   API -->|valida token / grupos| ENTRA
-  API --> DB[(PostgreSQL)]
-  API --> JOB[Jobs agendados: alertas, vencimentos]
-  JOB --> MAIL[E-mail / Teams - A Validar]
+  API --> DB[(Cloudflare D1 - SQLite)]
+  CRON[Cron Triggers] --> API
+  API --> MAIL[E-mail / Teams - A Validar]
   API --> EXP[Export Excel/PDF · Import Excel]
   API -. futuro .-> PORT[Portfólio de Inovação]
   API -. futuro .-> MS[Fabric / Purview / Power BI]
@@ -105,18 +107,18 @@ flowchart LR
 
 | ADR | Decisão | Justificativa | Alternativa descartada / risco |
 |---|---|---|---|
-| 001 | **Monólito modular**, não microsserviços | Equipe de 1 dev compartilhado; prazo de 90 dias para MVP; menor custo operacional | Microsserviços: complexidade sem ganho |
-| 002 | **React + TypeScript (Vite) / Node.js + TypeScript (NestJS)** | Alinhado ao TAP e ao Portfólio de Inovação (reuso de equipe); NestJS dá estrutura modular, validação e RBAC | Express puro: menos estrutura para crescer |
-| 003 | **PostgreSQL** (**A Validar** com TI) | Integridade relacional forte para relações N:N, JSONB para snapshots de revisão, consultas recursivas para o grafo, full-text em português | SQL Server: viável se for padrão da TI; mantém-se via ORM |
-| 004 | **ORM Prisma** + migrations versionadas | Rastreabilidade e revisão em PR | — |
+| 001 | **Monólito modular em um único Worker**, não microsserviços | Equipe de 1 dev compartilhado; prazo de 90 dias; menor custo operacional | Vários Workers: complexidade sem ganho |
+| 002 | **React + TypeScript (Vite) no Pages / Hono + TypeScript no Workers** | Mantém React do TAP; Hono é leve e nativo de Workers; sem servidor Node | NestJS: pesado para runtime Workers |
+| 003 | **Cloudflare D1 (SQLite)** — confirmado em 26/11/2026 | Zero servidor, baixo custo, volume de catálogo pequeno; FKs, JSON e FTS5 disponíveis | Limites do D1 (AV-24): sem consultas recursivas pesadas e busca em PT limitada. Saída: Postgres externo via Hyperdrive |
+| 004 | **Drizzle ORM** + migrations SQL versionadas (Wrangler) | Compatível com D1 e Workers; revisão em PR | Prisma: suporte a D1 menos maduro |
 | 005 | **Entidades tipadas + view unificada de arestas** (`vw_grafo_arestas`) | Integridade referencial real (FKs) e um único ponto de leitura para o mapa; evita "tabelão genérico" frágil | Grafo genérico puro: perde integridade; banco de grafos: excesso para o volume esperado |
-| 006 | **Mapa com React Flow** (ou Cytoscape.js) + API de vizinhança `GET /grafo/{tipo}/{id}?profundidade=n` | Expansão/recolhimento de nós (RN-MAP-001), início por qualquer elemento, carga sob demanda (meta de 3 s) | Renderizar grafo inteiro: não escala |
-| 007 | **Entra ID via OIDC (MSAL + validação de JWT)**; perfis por grupos do Entra mapeados a papéis internos | RNF do BRD; sem senhas locais | — |
+| 006 | **Mapa com React Flow** (ou Cytoscape.js) + API de vizinhança `GET /grafo/{tipo}/{id}?profundidade=n` | Expansão/recolhimento (RN-MAP-001), início por qualquer elemento; vizinhança calculada por profundidade limitada na view de arestas (CTE recursiva com limite) | Renderizar grafo inteiro: não escala |
+| 007 | **Entra ID via OIDC (MSAL no front; validação de JWT no Worker)**; perfis por grupos do Entra | RNF do BRD; sem senhas locais. Cloudflare Access fica como alternativa | — |
 | 008 | **Workflow como máquina de estados**: Rascunho → Submetido → Em Revisão → (Devolvido) → Aprovado → Publicado | BRD + AV-07; transições validadas no servidor com checagem de papel (Curador submete, Dono aprova) | — |
-| 009 | **Revisões por snapshot JSONB** + `auditoria` append-only (quem, quando, o quê, antes/depois) | RN-WKF-003 e trilha de auditoria; item publicado é imutável, edição abre nova revisão | Soft versioning por coluna: difícil de auditar |
+| 009 | **Revisões por snapshot JSON (texto)** + `auditoria` append-only (quem, quando, o quê, antes/depois) | RN-WKF-003 e trilha de auditoria; item publicado é imutável | Soft versioning por coluna: difícil de auditar |
 | 010 | **Somente metadados; sem upload de arquivos no MVP** | Risco crítico do TAP (dado sensível copiado) | Anexos: só após revisão de privacidade |
-| 011 | **Jobs agendados** (node-cron/pg-boss) para alertas de 30/15/5 dias e vencidos | RN-REC-001..004 | Fila externa: desnecessária agora |
-| 012 | **Container Docker** + CI no GitHub Actions; hospedagem **A Validar** (Azure é provável, não confirmado) | Portabilidade e menor dependência tecnológica (risco do TAP) | — |
+| 011 | **Cron Triggers** para alertas de 30/15/5 dias e vencidos | RN-REC-001..004; nativo da plataforma | Queues só se necessário |
+| 012 | **Cloudflare Pages/Workers/D1**, deploy via Wrangler + GitHub Actions | Decisão do usuário; risco de dependência mitigado com exportação completa e API documentada | Ver AV-23 |
 | 013 | **Importação Excel** em duas etapas (pré-validação → confirmação) com relatório de duplicidades | Instrumento de coleta do TAP | — |
 | 014 | **Parametrização** (listas controladas, regras ativáveis por fase, nome do produto) em tabela de configuração | Absorver AV-05, AV-22 sem retrabalho | — |
 
@@ -156,9 +158,7 @@ Capacidade compartilhada do dev (alta) · escopo excessivo / replicar planilha c
 5. Criação do repositório, templates e Project (após indicar o repositório)
 6. Implementação por funcionalidade, sempre via Issue + PR
 
-## 10. Decisões que preciso de você
+## 10. Decisões tomadas e pendentes
 
-1. **Repositório GitHub:** organização e nome? Já existe ou crio?
-2. **Banco:** PostgreSQL é aceitável ou a TI padroniza SQL Server?
-3. **Hospedagem:** Azure/on-premises/outro?
-4. **Mapa no MVP:** confirma versão básica já na Onda 1?
+**Tomadas (26/11/2026):** repositório `kamilaSilveiraJM/jmendes-datamap`; Cloudflare como infraestrutura; D1 como banco.
+**Pendentes:** AV-23 (aprovação formal do Cloudflare) e confirmar se o Mapa básico entra já na Onda 1 (AV-19).
