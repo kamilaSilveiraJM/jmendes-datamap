@@ -1,0 +1,14 @@
+{
+  "name": "jmendes-datamap",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["api", "web"],
+  "scripts": {
+    "dev:api": "npm run dev -w api",
+    "dev:web": "npm run dev -w web",
+    "typecheck": "npm run typecheck -w api && npm run typecheck -w web",
+    "test": "npm run test -w api",
+    "db:migrate:local": "npm run db:migrate:local -w api",
+    "db:check": "python3 -I scripts/check_migrations.py"
+  }
+}
