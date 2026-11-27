@@ -65,13 +65,13 @@ Colunas comuns a todo ativo: `status` (Rascunho→Submetido→Em Revisão→Devo
 
 ## 5. Dados semente
 
-`0003` contém **apenas** o que está na documentação: categorias de sistema (ERP, ALFRESCO, HCM), frequências de recertificação, 8 categorias de oportunidade e parâmetros (alertas 30/15/5). Nada além disso foi inventado.
+`0003` contém **apenas** o que está na documentação; `0004` traz as listas **propostas** (AV-25): categorias de sistema (ERP, ALFRESCO, HCM), frequências de recertificação, 8 categorias de oportunidade e parâmetros (alertas 30/15/5). Nada além disso foi inventado.
 
 ## 6. A Validar (novos)
 
 | ID | Item |
 |---|---|
-| AV-25 | Valores das listas **Criticidade, Frequência, LGPD, Confidencialidade, Qualidade percebida/Confiabilidade, Tipo de consumo, Tipo de relatório** não constam nos documentos |
+| AV-25 | **Resolvido por delegação (26/11/2026):** valores propostos em `0004_seed_listas_propostas.sql` (criticidade, frequência, LGPD, confidencialidade, qualidade, confiabilidade, tipo de consumo, tipo de relatório, ciclo de vida). Revisar no workshop de validação com Segurança/Privacidade |
 | AV-26 | Unicidade de Dado, Sistema e Planilha (BRD só define para Indicador) |
 | AV-27 | Cardinalidade Processo↔Dado: BRD exige 1 processo por dado; um dado pode servir a vários processos? |
 | AV-28 | Regra (premissa/exceção) do TAP não está no BRD: confirmar se entra no MVP |
