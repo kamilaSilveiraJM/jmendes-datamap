@@ -1,0 +1,5 @@
+:root { --azul-turquesa: rgb(0, 101, 121); --preto: rgb(0, 0, 0); --branco: #fff; }
+body { margin: 0; font-family: system-ui, sans-serif; color: var(--preto); background: var(--branco); }
+header { background: var(--azul-turquesa); color: var(--branco); padding: 16px 24px; }
+header h1 { margin: 0; font-size: 1.25rem; }
+main > p { padding: 0 24px; }

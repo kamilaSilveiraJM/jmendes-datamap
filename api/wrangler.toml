@@ -1,0 +1,12 @@
+name = "jmendes-datamap-api"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+
+[vars]
+PRODUCT_NAME = "J. Mendes DataMap"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "jmendes-datamap"
+database_id = "00000000-0000-0000-0000-000000000000"  # substituir pelo id retornado por `wrangler d1 create`
+migrations_dir = "../db/migrations"
